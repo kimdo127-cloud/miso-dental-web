@@ -12,7 +12,7 @@ type Slot = { time: string; available: boolean };
 function Book() {
   const router = useRouter();
   const params = useSearchParams();
-  const { current } = useProfile();
+  const { current, profiles, choose } = useProfile();
   const [procs, setProcs] = useState<Proc[]>([]);
   const [proc, setProc] = useState<Proc | null>(null);
   const today = kstToday();
@@ -50,8 +50,20 @@ function Book() {
 
   return (
     <div>
-      <PageTitle title="예약 신청" sub={current ? `${current.name}${current.isChild ? " 어린이" : "님"}의 예약이에요` : undefined} />
+      <PageTitle title="예약 신청" />
       <div className="space-y-6 bg-white px-5 pb-6">
+        {profiles.length > 1 && (
+          <section>
+            <h2 className="text-[15px] font-semibold text-grey-700">누구 예약인가요?</h2>
+            <div className="mt-3 flex gap-2">
+              {profiles.map((p) => (
+                <button key={p.id} onClick={() => choose(p.id)} className={`h-11 rounded-full px-4 text-[15px] font-semibold ${current?.id === p.id ? "bg-grey-900 text-white" : "bg-grey-100 text-grey-700"}`}>
+                  {p.name}{p.isChild ? " (아이)" : ""}
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         <section>
           <h2 className="text-[15px] font-semibold text-grey-700">1. 어떤 진료인가요?</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
@@ -95,7 +107,7 @@ function Book() {
       </div>
       <div className="sticky bottom-16 bg-white px-5 py-3">
         <Button className="w-full" disabled={!proc || !time || busy} onClick={submit}>
-          {proc && time ? `${Number(date.slice(5, 7))}월 ${Number(date.slice(8))}일 ${time} ${proc.name} 예약` : "진료와 시간을 골라 주세요"}
+          {proc && time ? `${current && profiles.length > 1 ? current.name + " · " : ""}${Number(date.slice(5, 7))}월 ${Number(date.slice(8))}일 ${time} ${proc.name} 예약` : "진료와 시간을 골라 주세요"}
         </Button>
       </div>
     </div>

@@ -24,7 +24,7 @@ export default function Login() {
     setBusy(true); setErr("");
     try {
       const r = await api<{ token: string; profiles: Profile[] }>("/patient/login", { body: { phone, name } });
-      const me = r.profiles.find((p) => p.name === name.trim()) || r.profiles[0];
+      const me = r.profiles.find((p) => p.isOwner) || r.profiles[0];
       session.set(r.token, me.id);
       router.replace("/home");
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
@@ -34,16 +34,16 @@ export default function Login() {
     <div className="flex min-h-dvh flex-col px-6 pt-16">
       <p className="text-[15px] font-semibold text-brand">미소치과</p>
       <h1 className="mt-2 text-[26px] font-bold leading-snug">예약과 진료 후 궁금한 점,<br />여기서 확인하세요</h1>
-      <p className="mt-3 text-[15px] text-grey-500">병원에 등록된 휴대폰 번호와 이름으로 본인 확인을 해요. 아이는 보호자 번호로 확인해요.</p>
+      <p className="mt-3 text-[15px] text-grey-500">병원에 등록된 휴대폰 번호와 이름으로 본인 확인을 해요. 아이 진료는 부모님 번호로 확인한 뒤 고를 수 있어요.</p>
 
       <form onSubmit={submit} className="mt-10 space-y-4">
         <label className="block">
-          <span className="text-[14px] font-medium text-grey-700">휴대폰 번호 (아이는 보호자 번호)</span>
+          <span className="text-[14px] font-medium text-grey-700">휴대폰 번호</span>
           <input inputMode="numeric" autoComplete="tel" value={phone} onChange={(e) => setPhone(fmt(e.target.value))} placeholder="010-0000-0000"
             className="mt-2 h-14 w-full rounded-m border border-grey-200 px-4 text-[17px] outline-none focus:border-brand" />
         </label>
         <label className="block">
-          <span className="text-[14px] font-medium text-grey-700">이름 (본인 또는 아이 이름)</span>
+          <span className="text-[14px] font-medium text-grey-700">이름 (휴대폰 주인)</span>
           <input value={name} onChange={(e) => setName(e.target.value)} placeholder="홍길동"
             className="mt-2 h-14 w-full rounded-m border border-grey-200 px-4 text-[17px] outline-none focus:border-brand" />
         </label>

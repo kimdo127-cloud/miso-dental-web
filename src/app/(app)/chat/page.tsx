@@ -4,7 +4,8 @@ import { ArrowUp, FileText, Phone, Siren, Inbox } from "lucide-react";
 import { api, ChatResult } from "@/lib/api";
 import { useProfile } from "@/components/shell";
 
-type Msg = { role: "me" | "bot"; text: string; result?: ChatResult };
+type Msg = { role: "me" | "bot"; text: string; result?: ChatResult; past?: boolean };
+type History = { question: string; status: string; ai_answer: string | null; desk_answer: string | null };
 const EXAMPLES = ["사랑니 뺐는데 술은 언제부터 마셔도 돼요?", "임플란트 하고 운동해도 돼요?", "스케일링 보험 되는 거 맞죠?", "교정 장치 붙이고 떡 먹어도 돼요?"];
 
 // P3 AI 상담: 병원 자료로만 답하고 근거(문서 · 쪽)를 보여 줌. 증상 질문은 답하지 않고 연락처 안내
@@ -15,6 +16,13 @@ export default function ChatPage() {
   const [busy, setBusy] = useState(false);
   const end = useRef<HTMLDivElement>(null);
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
+  // 이전 상담과 데스크 답변 (오래된 것부터)
+  useEffect(() => {
+    api<History[]>("/chat").then((h) => setMsgs(h.slice().reverse().flatMap((x) => [
+      { role: "me" as const, text: x.question },
+      { role: "bot" as const, text: x.desk_answer ? `데스크 답변: ${x.desk_answer}` : x.ai_answer || (x.status === "증상 안내" ? "증상 질문이라 병원 연락처를 안내해 드렸어요." : "데스크에 전달했어요. 답변이 오면 알림으로 알려 드릴게요."), past: true },
+    ]))).catch(() => {});
+  }, []);
 
   async function send(text: string) {
     const q = text.trim();
@@ -35,9 +43,9 @@ export default function ChatPage() {
         <div className="rounded-2xl bg-white p-5">
           <p className="text-[17px] font-bold">진료 후 궁금한 점을 물어보세요</p>
           <p className="mt-1 text-[14px] leading-relaxed text-grey-500">
-            {current?.isChild ? `${current.name} 어린이의 ` : ""}시술 후 주의사항과 보험 기준을 병원 자료로 답해 드려요. 지금 증상이 괜찮은지는 진료가 필요해 답해 드릴 수 없어요.
+            {current?.isChild ? `${current.name}(아이) 질문으로 기록돼요. ` : ""}시술 후 주의사항과 보험 기준을 병원 자료로 답해 드려요. 지금 증상이 괜찮은지는 진료가 필요해 답해 드릴 수 없어요.
           </p>
-          {msgs.length === 0 && (
+          {!msgs.some((m) => !m.past) && (
             <div className="mt-4 flex flex-wrap gap-2">
               {EXAMPLES.map((e) => <button key={e} onClick={() => send(e)} className="rounded-full bg-grey-100 px-3 py-2 text-left text-[13px] text-grey-700">{e}</button>)}
             </div>
@@ -83,7 +91,7 @@ function BotMessage({ m }: { m: Msg }) {
     );
   }
   return (
-    <div className="max-w-[90%] rounded-2xl rounded-bl-md bg-white p-4">
+    <div className={`max-w-[90%] rounded-2xl rounded-bl-md p-4 ${m.past ? "bg-grey-50 text-grey-700" : "bg-white"}`}>
       <p className="text-[15px] leading-relaxed">{m.text}</p>
       {r?.sources?.length ? (
         <div className="mt-3 space-y-2 border-t border-grey-100 pt-3">

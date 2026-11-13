@@ -7,7 +7,7 @@ import { useProfile } from "@/components/shell";
 import { Badge, Card, Spinner } from "@/components/ui";
 
 type Me = {
-  id: number; name: string; isChild: boolean; unread: number; nextCheckupDue: string | null; checkupOverdue: boolean;
+  id: number; ownerName: string | null; name: string; isChild: boolean; unread: number; nextCheckupDue: string | null; checkupOverdue: boolean;
   nextAppointment: { id: number; start_at: string; confirm_status: string; procedure: string } | null;
   familyUpcoming: { id: number; start_at: string; confirm_status: string; procedure: string; patient_id: number; patient: string }[];
 };
@@ -17,18 +17,18 @@ export default function HomePage() {
   const { current, profiles } = useProfile();
   const [me, setMe] = useState<Me | null>(null);
   useEffect(() => { api<Me>("/me").then(setMe).catch(() => {}); }, []);
-  if (!me) return <Spinner />;
   const family = profiles.length > 1;
+  if (!me) return <Spinner />;
   const others = me.familyUpcoming.filter((a) => a.patient_id !== me.id);
 
   return (
     <div className="space-y-3 pt-3">
       <div className="px-5 pb-1 pt-2">
-        <h1 className="text-[22px] font-bold">{current?.isChild ? `${me.name} 어린이` : `${me.name}님`}, 안녕하세요</h1>
+        <h1 className="text-[22px] font-bold">{me.ownerName ? `${me.ownerName}님` : "보호자님"}, 안녕하세요</h1>
       </div>
 
       <Card className="mx-4">
-        <p className="text-[14px] font-medium text-grey-500">다음 예약</p>
+        <p className="text-[14px] font-medium text-grey-500">{family ? `${me.name}${current?.isChild ? " (아이)" : ""} · 다음 예약` : "다음 예약"}</p>
         {me.nextAppointment ? (
           <Link href="/appointments" className="mt-2 flex items-center justify-between">
             <div>
@@ -48,7 +48,7 @@ export default function HomePage() {
       {me.checkupOverdue && (
         <Link href="/book?procedure=정기 검진" className="mx-4 flex items-center justify-between rounded-2xl bg-brand-weak p-5">
           <div>
-            <p className="text-[16px] font-bold text-brand">정기 검진 시기가 됐어요</p>
+            <p className="text-[16px] font-bold text-brand">{family ? `${me.name} ` : ""}정기 검진 시기가 됐어요</p>
             <p className="mt-1 text-[14px] text-grey-700">마지막 검진 후 6개월이 지났어요. 편한 시간에 예약하세요.</p>
           </div>
           <ChevronRight className="text-brand" />

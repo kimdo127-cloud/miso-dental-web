@@ -49,11 +49,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh flex-col bg-grey-100">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between bg-white px-5">
           <span className="text-[17px] font-bold text-brand">미소치과</span>
-          {family ? (
-            <button onClick={() => setOpen(true)} className="flex items-center gap-1 rounded-full bg-grey-100 py-1.5 pl-3 pr-2 text-[14px] font-semibold text-grey-900">
-              <span className="text-grey-500">진료받을 사람</span> {current.name}{current.isChild ? " (아이)" : ""} <ChevronDown size={16} />
-            </button>
-          ) : <span className="text-[14px] font-semibold text-grey-700">{current.name}님</span>}
+          <button onClick={() => setOpen(true)} className="flex items-center gap-1 rounded-full bg-grey-100 py-1.5 pl-3 pr-2 text-[14px] font-semibold text-grey-900">
+            {family ? <><span className="text-grey-500">진료받을 사람</span> {current.name}{current.isChild ? " (아이)" : ""}</> : <>{current.name}님</>} <ChevronDown size={16} />
+          </button>
         </header>
 
         <main key={version} className="flex-1 pb-24">{children}</main>
@@ -72,8 +70,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
         {open && (
           <div className="fixed inset-0 z-30 flex items-end justify-center bg-black/40 animate-fade" onClick={() => setOpen(false)}>
             <div className="w-full max-w-[480px] rounded-t-3xl bg-white p-6 pb-10 animate-sheet" onClick={(e) => e.stopPropagation()}>
-              <h2 className="text-[20px] font-bold">누구 진료인가요?</h2>
-              <p className="mt-1 text-[14px] text-grey-500">고른 사람 기준으로 예약 · 상담 · 시술 기록이 보여요.</p>
+              <h2 className="text-[20px] font-bold">{family ? "누구 진료인가요?" : "내 정보"}</h2>
+              <p className="mt-1 text-[14px] text-grey-500">{family ? "고른 사람 기준으로 예약 · 상담 · 시술 기록이 보여요." : "보호자 번호에 아이가 등록되면 여기서 아이를 골라 예약할 수 있어요."}</p>
               <ul className="mt-5 space-y-2">
                 {profiles.map((p) => (
                   <li key={p.id}>
@@ -84,6 +82,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                   </li>
                 ))}
               </ul>
+              <button onClick={() => { session.clear(); router.replace("/"); }} className="mt-5 w-full py-3 text-[15px] font-medium text-grey-500">다른 번호로 확인하기 (로그아웃)</button>
             </div>
           </div>
         )}

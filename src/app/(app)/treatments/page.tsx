@@ -15,7 +15,7 @@ export default function TreatmentsPage() {
   useEffect(() => { api<T[]>("/treatments").then(setList).catch(() => setList([])); }, []);
   return (
     <div>
-      <PageTitle title="받은 시술" sub={`${current?.name ?? ""}${current?.isChild ? " 어린이" : "님"}의 시술 목록이에요. 누르면 주의사항을 다시 볼 수 있어요.`} />
+      <PageTitle title="받은 시술" sub={`${current?.name ?? ""}${current?.isChild ? " (아이)" : ""}의 시술 목록이에요. 누르면 주의사항을 다시 볼 수 있어요.`} />
       <div className="px-4 pt-3">
         {!list ? <Spinner /> : list.length === 0 ? <Empty>받은 시술 기록이 없어요</Empty> : (
           <ul className="overflow-hidden rounded-2xl bg-white">

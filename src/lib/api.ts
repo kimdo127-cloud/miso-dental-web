@@ -1,7 +1,7 @@
 // 백엔드 API (NestJS). 로그인 토큰과 "진료받을 사람"은 이 기기에만 저장
 export const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4100/api";
 
-export type Profile = { id: number; name: string; age: number; isChild: boolean };
+export type Profile = { id: number; name: string; age: number; isChild: boolean; isOwner: boolean };
 export type Source = { document: string; edition: number; page: number; heading: string; excerpt: string };
 export type ChatResult = { type: "answer" | "symptom" | "handoff"; category: string; answer: string; sources: Source[]; clinic: { open: boolean; phone: string; hours: string; message: string } };
 
