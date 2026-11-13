@@ -4,6 +4,12 @@ import { useRouter } from "next/navigation";
 import { api, Profile, session } from "@/lib/api";
 import { Button, ErrorText } from "@/components/ui";
 
+// 시드 데이터의 시연 계정 (backend/src/db/seed.ts, 가상 환자)
+const TEST_ACCOUNTS = [
+  { label: "보호자", sub: "박지연 · 하준·서아 엄마", phone: "01055556666", name: "박지연" },
+  { label: "성인 환자", sub: "김민지 · 사랑니 발치 후", phone: "01012345678", name: "김민지" },
+];
+
 // P1 본인 확인: 휴대폰 번호 + 이름 (아이는 보호자 번호 + 아이 또는 보호자 이름)
 export default function Login() {
   const router = useRouter();
@@ -21,6 +27,10 @@ export default function Login() {
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
+    await doLogin(phone, name);
+  }
+
+  async function doLogin(phone: string, name: string) {
     setBusy(true); setErr("");
     try {
       const r = await api<{ token: string; profiles: Profile[] }>("/patient/login", { body: { phone, name } });
@@ -51,8 +61,18 @@ export default function Login() {
         <Button type="submit" disabled={busy || phone.replace(/\D/g, "").length < 10 || !name.trim()} className="w-full">{busy ? "확인 중..." : "확인"}</Button>
       </form>
 
-      <div className="mt-auto mb-8 rounded-m bg-grey-50 p-4 text-[13px] leading-relaxed text-grey-500">
-        시연용 가상 환자 · 성인: 010-1234-5678 김민지 · 보호자(아이 2명): 010-5555-6666 박지연
+      {/* 테스트용: 시연 계정으로 바로 로그인 (가상 환자) */}
+      <div className="mt-auto border-t border-grey-200 pt-6 pb-8">
+        <p className="mb-3 text-[12px] font-semibold text-grey-500">테스트 계정으로 로그인</p>
+        <div className="grid grid-cols-2 gap-2">
+          {TEST_ACCOUNTS.map((t) => (
+            <button key={t.phone} type="button" disabled={busy} onClick={() => doLogin(t.phone, t.name)}
+              className="rounded-xl border border-grey-200 bg-white px-2 py-3 text-center active:bg-grey-50 disabled:opacity-40">
+              <span className="block text-[14px] font-semibold">{t.label}</span>
+              <span className="mt-0.5 block text-[11px] text-grey-500">{t.sub}</span>
+            </button>
+          ))}
+        </div>
       </div>
     </div>
   );
