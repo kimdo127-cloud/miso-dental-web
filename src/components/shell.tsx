@@ -27,7 +27,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   useEffect(() => { if (session.token()) api<{ unread?: number }>("/me").then((m) => setUnread(m.unread || 0)).catch(() => {}); }, [path, version]);
 
   useEffect(() => {
-    if (!session.token()) { router.replace("/"); return; }
+    if (!session.token()) { router.replace("/?next=" + encodeURIComponent(window.location.pathname + window.location.search)); return; }
     api<Profile[]>("/profiles").then((ps) => {
       setProfiles(ps);
       const saved = Number(session.patientId());

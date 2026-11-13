@@ -10,6 +10,8 @@ const TEST_ACCOUNTS = [
   { label: "성인 환자", sub: "김민지 · 사랑니 발치 후", phone: "01012345678", name: "김민지" },
 ];
 
+const nextPath = () => { const n = new URLSearchParams(window.location.search).get("next"); return n && n.startsWith("/") && !n.startsWith("//") ? n : null; };
+
 // P1 본인 확인: 휴대폰 번호 + 이름 (아이는 보호자 번호 + 아이 또는 보호자 이름)
 export default function Login() {
   const router = useRouter();
@@ -18,7 +20,7 @@ export default function Login() {
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
 
-  useEffect(() => { if (session.token()) router.replace("/home"); }, [router]);
+  useEffect(() => { if (session.token()) router.replace(nextPath() || "/home"); }, [router]);
 
   const fmt = (v: string) => {
     const d = v.replace(/\D/g, "").slice(0, 11);
@@ -36,7 +38,7 @@ export default function Login() {
       const r = await api<{ token: string; profiles: Profile[] }>("/patient/login", { body: { phone, name } });
       const me = r.profiles.find((p) => p.isOwner) || r.profiles[0];
       session.set(r.token, me.id);
-      router.replace("/home");
+      router.replace(nextPath() || "/home");
     } catch (e) { setErr((e as Error).message); } finally { setBusy(false); }
   }
 
