@@ -23,7 +23,7 @@ export default function NotificationsPage() {
 
   return (
     <div>
-      <PageTitle title="알림" />
+      <PageTitle title="알림" sub="전날 확인 · 검진 안내 · 데스크 답변을 모아 보여 드려요" />
       <div className="px-4 pt-3">
         {!list ? <Spinner /> : list.length === 0 ? <Empty>새 알림이 없어요</Empty> : (
           <ul className="overflow-hidden rounded-2xl bg-white">
@@ -37,6 +37,7 @@ export default function NotificationsPage() {
                   </div>
                   <p className={`mt-2 text-[16px] ${n.read_at ? "text-grey-700" : "font-semibold"}`}>{n.title}</p>
                   <p className="mt-1 text-[14px] text-grey-500">{n.body}</p>
+                  <p className="mt-2 text-[12px] text-grey-400">{new Date(n.sent_at).toLocaleString("ko-KR", { timeZone: "Asia/Seoul", month: "long", day: "numeric", hour: "numeric", minute: "2-digit" })}</p>
                 </button>
               </li>
             ))}

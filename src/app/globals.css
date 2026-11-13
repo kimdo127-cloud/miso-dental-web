@@ -64,3 +64,7 @@ body {
 .animate-fade {
   animation: fade-in 200ms var(--ease-toss);
 }
+
+/* 스크롤바 숨김 (스크롤은 유지) */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }

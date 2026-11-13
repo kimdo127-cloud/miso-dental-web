@@ -22,6 +22,8 @@ function Book() {
   const [time, setTime] = useState("");
   const [err, setErr] = useState("");
   const [busy, setBusy] = useState(false);
+  const [overdue, setOverdue] = useState(false);
+  useEffect(() => { api<{ checkupOverdue: boolean }>("/me").then((m) => setOverdue(m.checkupOverdue)).catch(() => {}); }, [current?.id]);
 
   useEffect(() => {
     api<Proc[]>("/procedures").then((ps) => {
@@ -67,8 +69,8 @@ function Book() {
 
   return (
     <div className="pb-32">
-      <div className="bg-white px-5 pb-4 pt-4">
-        <h1 className="text-[24px] font-bold">예약 신청</h1>
+      <div className="bg-white px-5 pb-3 pt-3">
+        <h1 className="text-[20px] font-bold">예약 신청</h1>
         <div className="mt-3 flex items-center gap-2 text-[13px] font-semibold">
           {["진료", "날짜 · 시간", "확인"].map((l, i) => (
             <span key={l} className="flex items-center gap-2">
@@ -82,23 +84,39 @@ function Book() {
 
       <div className="space-y-3 px-4 pt-3">
         {profiles.length > 1 && (
-          <section className="rounded-3xl bg-white p-5">
-            <h2 className="text-[16px] font-bold">누구 예약인가요?</h2>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {profiles.map((p) => (
-                <button key={p.id} onClick={() => choose(p.id)} className={`h-10 rounded-full px-4 text-[14px] font-semibold ${current?.id === p.id ? "bg-grey-900 text-white" : "bg-grey-100 text-grey-700"}`}>
-                  {p.name}{p.isChild ? " (아이)" : ""}
-                </button>
-              ))}
+          <section className="rounded-2xl bg-white px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="shrink-0 text-[13px] font-semibold text-grey-500">진료받을 분</span>
+              <div className="flex flex-1 flex-wrap justify-end gap-1.5">
+                {profiles.map((p) => {
+                  const on = current?.id === p.id;
+                  return (
+                    <button key={p.id} onClick={() => choose(p.id)} className={`h-9 rounded-full px-3 text-[14px] font-semibold transition ${on ? "bg-brand text-white" : "bg-grey-100 text-grey-700"}`}>
+                      {p.name}<span className={`ml-1 text-[12px] font-medium ${on ? "text-white/80" : "text-grey-500"}`}>{p.isChild ? "아이" : "본인"}</span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
+            <p className="mt-2 text-[12px] text-grey-400">목록에 없는 아이는 첫 방문 때 데스크에서 보호자 번호로 등록해 드려요.</p>
           </section>
+        )}
+
+        {overdue && proc?.name !== "정기 검진" && (
+          <button onClick={() => setProc(procs.find((p) => p.name === "정기 검진") || null)} className="flex w-full items-center justify-between rounded-2xl bg-warning-weak px-4 py-3 text-left">
+            <span>
+              <span className="block text-[15px] font-bold text-warning">{current?.name} 정기 검진 시기가 지났어요</span>
+              <span className="block text-[13px] text-grey-700">마지막 검진 후 6개월이 지났어요. 누르면 정기 검진으로 골라 드려요.</span>
+            </span>
+            <span className="text-warning">›</span>
+          </button>
         )}
 
         <section className="rounded-3xl bg-white p-5">
           <h2 className="text-[16px] font-bold">어떤 진료를 받으세요?</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {procs.map((p) => (
-              <button key={p.id} onClick={() => setProc(p)} className={`relative rounded-2xl border-2 px-4 py-3 text-left transition ${proc?.id === p.id ? "border-brand bg-brand-weak" : "border-transparent bg-grey-50"}`}>
+              <button key={p.id} onClick={() => setProc(p)} className={`relative rounded-xl border-2 px-3 py-2.5 text-left transition ${proc?.id === p.id ? "border-brand bg-brand-weak" : "border-transparent bg-grey-50"}`}>
                 <p className="text-[15px] font-semibold">{p.name}</p>
                 <p className="mt-0.5 text-[12px] text-grey-500">약 {p.duration_min}분</p>
                 {proc?.id === p.id && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[11px] text-white">✓</span>}
@@ -113,11 +131,11 @@ function Book() {
               <h2 className="text-[16px] font-bold">날짜</h2>
               <span className="text-[13px] font-semibold text-grey-500">{Number(date.slice(5, 7))}월 · 일요일 휴진</span>
             </div>
-            <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1">
+            <div className="mt-3 grid grid-cols-6 gap-1.5">
               {days.map((d) => (
-                <button key={d} onClick={() => setDate(d)} className={`flex h-[68px] w-[52px] shrink-0 flex-col items-center justify-center gap-1 rounded-2xl transition ${date === d ? "bg-brand text-white" : "bg-grey-50"}`}>
+                <button key={d} onClick={() => setDate(d)} className={`flex h-14 flex-col items-center justify-center gap-0.5 rounded-xl transition ${date === d ? "bg-brand text-white" : "bg-grey-50"}`}>
                   <span className={`text-[12px] font-medium ${date === d ? "text-white/80" : dowOf(d) === "토" ? "text-brand" : "text-grey-500"}`}>{dowOf(d)}</span>
-                  <span className="text-[18px] font-bold">{Number(d.slice(8))}</span>
+                  <span className="text-[16px] font-bold">{Number(d.slice(8))}</span>
                 </button>
               ))}
             </div>

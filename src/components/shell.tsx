@@ -2,7 +2,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
-import { Bell, CalendarDays, ChevronDown, Home, MessageCircle, Stethoscope, Check } from "lucide-react";
+import { Bell, CalendarDays, Home, MessageCircle, Check, UserRound } from "lucide-react";
 import { api, Profile, session } from "@/lib/api";
 
 type Ctx = { profiles: Profile[]; current: Profile | null; choose: (id: number) => void; version: number };
@@ -11,9 +11,8 @@ export const useProfile = () => useContext(ProfileCtx);
 
 const TABS = [
   { href: "/home", label: "홈", icon: Home },
-  { href: "/chat", label: "상담", icon: MessageCircle },
-  { href: "/appointments", label: "예약", icon: CalendarDays },
-  { href: "/treatments", label: "내 시술", icon: Stethoscope },
+  { href: "/chat", label: "AI 상담", icon: MessageCircle },
+  { href: "/appointments", label: "내 진료", icon: CalendarDays },
   { href: "/notifications", label: "알림", icon: Bell },
 ];
 
@@ -49,16 +48,14 @@ export function Shell({ children }: { children: React.ReactNode }) {
       <div className="flex min-h-dvh flex-col bg-grey-100">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between bg-white px-5">
           <span className="text-[17px] font-bold text-brand">미소치과</span>
-          <button onClick={() => setOpen(true)} className="flex items-center gap-1 rounded-full bg-grey-100 py-1.5 pl-3 pr-2 text-[14px] font-semibold text-grey-900">
-            {family ? <><span className="text-grey-500">진료받을 사람</span> {current.name}{current.isChild ? " (아이)" : ""}</> : <>{current.name}님</>} <ChevronDown size={16} />
-          </button>
+          <button onClick={() => setOpen(true)} aria-label="내 정보" className="flex h-9 w-9 items-center justify-center rounded-full bg-grey-100 text-grey-700"><UserRound size={18} /></button>
         </header>
 
         <main key={version} className="flex-1 pb-24">{children}</main>
 
-        <nav className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-5 border-t border-grey-200 bg-white pb-[env(safe-area-inset-bottom)]">
+        <nav className="fixed bottom-0 left-1/2 z-20 grid w-full max-w-[480px] -translate-x-1/2 grid-cols-4 border-t border-grey-200 bg-white pb-[env(safe-area-inset-bottom)]">
           {TABS.map(({ href, label, icon: Icon }) => {
-            const on = path.startsWith(href) || (href === "/appointments" && path.startsWith("/book"));
+            const on = path.startsWith(href) || (href === "/appointments" && (path.startsWith("/book") || path.startsWith("/treatments")));
             return (
               <Link key={href} href={href} className={`flex h-16 flex-col items-center justify-center gap-1 text-[11px] font-medium ${on ? "text-grey-900" : "text-grey-400"}`}>
                 <Icon size={22} strokeWidth={on ? 2.4 : 1.8} />{label}
@@ -96,6 +93,20 @@ export function PageTitle({ title, sub }: { title: string; sub?: string }) {
     <div className="bg-white px-5 pb-5 pt-4">
       <h1 className="text-[24px] font-bold leading-snug">{title}</h1>
       {sub && <p className="mt-1 text-[15px] text-grey-500">{sub}</p>}
+    </div>
+  );
+}
+
+// 내 진료: 예약 · 받은 시술을 한 탭에서
+export function CareHeader({ active, sub }: { active: "appointments" | "treatments"; sub?: string }) {
+  return (
+    <div className="bg-white px-5 pb-4 pt-4">
+      <h1 className="text-[24px] font-bold leading-snug">내 진료</h1>
+      {sub && <p className="mt-1 text-[14px] text-grey-500">{sub}</p>}
+      <div className="mt-4 grid grid-cols-2 rounded-xl bg-grey-100 p-1 text-[15px] font-semibold">
+        <Link href="/appointments" className={`rounded-lg py-2 text-center ${active === "appointments" ? "bg-white text-grey-900 shadow-sm" : "text-grey-500"}`}>예약</Link>
+        <Link href="/treatments" className={`rounded-lg py-2 text-center ${active === "treatments" ? "bg-white text-grey-900 shadow-sm" : "text-grey-500"}`}>받은 시술 · 주의사항</Link>
+      </div>
     </div>
   );
 }

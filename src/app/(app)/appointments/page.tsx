@@ -3,8 +3,8 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { api, fmtDateTime } from "@/lib/api";
-import { useProfile, PageTitle } from "@/components/shell";
-import { Badge, Button, Card, Empty, ErrorText, Spinner } from "@/components/ui";
+import { useProfile, CareHeader } from "@/components/shell";
+import { Badge, Button, Card, ErrorText, Spinner } from "@/components/ui";
 
 type Appt = { id: number; start_at: string; procedure: string; confirm_status: string; source: string; patient_id: number; patient: string };
 
@@ -24,11 +24,11 @@ export default function AppointmentsPage() {
   const family = profiles.length > 1;
   return (
     <div>
-      <PageTitle title="예약" sub={family ? "가족 예약을 모두 보여 드려요" : undefined} />
+      <CareHeader active="appointments" sub={family ? "가족 예약을 모두 모아 보여 드려요" : "다가오는 예약과 방문 확인"} />
       <div className="space-y-3 px-4 pt-3">
         <Link href="/book" className="flex h-14 items-center justify-center gap-2 rounded-2xl bg-brand text-[16px] font-semibold text-white"><Plus size={20} /> 새 예약 신청</Link>
         <ErrorText>{err}</ErrorText>
-        {!list ? <Spinner /> : list.length === 0 ? <Empty>예정된 예약이 없어요</Empty> : list.map((a) => {
+        {!list ? <Spinner /> : list.length === 0 ? <div className="rounded-2xl bg-white p-8 text-center"><p className="text-[16px] font-semibold">예정된 예약이 없어요</p><p className="mt-1 text-[14px] text-grey-500">위 버튼으로 빈 시간을 바로 예약할 수 있어요</p></div> : list.map((a) => {
           const hours = (new Date(a.start_at).getTime() - Date.now()) / 3600e3;
           const soon = hours < 36;
           return (

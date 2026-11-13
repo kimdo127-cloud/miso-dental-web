@@ -44,11 +44,8 @@ export default function HomePage() {
   const next = me.nextAppointment;
 
   return (
-    <div className="space-y-3 px-4 pb-4 pt-4">
-      <div className="px-1 pb-1">
-        <h1 className="text-[22px] font-bold leading-snug">{me.ownerName ? `${me.ownerName}님` : "보호자님"}, 안녕하세요</h1>
-        <p className="mt-1 text-[14px] text-grey-500">{family ? `지금 ${who} 기준으로 보고 있어요` : "오늘도 건강한 치아 지켜 드릴게요"}</p>
-      </div>
+    <div className="space-y-2.5 px-4 pb-4 pt-3">
+      <h1 className="px-1 text-[20px] font-bold">{me.ownerName ? `${me.ownerName}님` : "보호자님"}, 안녕하세요</h1>
 
       {/* 다음 예약 */}
       {next ? (
@@ -57,48 +54,38 @@ export default function HomePage() {
             <span className="text-[13px] font-semibold text-white/80">{who ? `${who} · ` : ""}다음 예약</span>
             <span className="rounded-full bg-white/20 px-2.5 py-1 text-[12px] font-bold">{dDay(next.start_at)}</span>
           </div>
-          <p className="mt-3 text-[24px] font-bold leading-tight">{fmtDateTime(next.start_at)}</p>
+          <p className="mt-2 text-[22px] font-bold leading-tight">{fmtDateTime(next.start_at)}</p>
           <p className="mt-1 text-[15px] text-white/90">{next.procedure}</p>
-          <div className="mt-4 flex items-center justify-between rounded-2xl bg-white/15 px-4 py-3 text-[14px] font-semibold">
+          <div className="mt-3 flex items-center justify-between rounded-2xl bg-white/15 px-4 py-2.5 text-[14px] font-semibold">
             {next.confirm_status === "미확인" ? "방문 여부를 알려 주세요" : `방문 확인: ${next.confirm_status}`}
             <ChevronRight size={18} />
           </div>
         </Link>
       ) : (
-        <div className="rounded-3xl bg-white p-5">
-          <p className="text-[13px] font-semibold text-grey-500">{who ? `${who} · ` : ""}다음 예약</p>
-          <p className="mt-2 text-[18px] font-bold">예정된 예약이 없어요</p>
-          <p className="mt-1 text-[14px] text-grey-500">빈 의자가 있는 시간만 보여 드려서 바로 예약돼요.</p>
-          <Link href="/book" className="mt-4 flex h-12 items-center justify-center rounded-xl bg-brand text-[16px] font-semibold text-white">예약하기</Link>
+        <div className="flex items-center justify-between rounded-3xl bg-white p-5">
+          <div>
+            <p className="text-[13px] font-semibold text-grey-500">{who ? `${who} · ` : ""}다음 예약</p>
+            <p className="mt-1 text-[17px] font-bold">예정된 예약이 없어요</p>
+          </div>
+          <Link href="/book" className="rounded-xl bg-brand px-4 py-2.5 text-[15px] font-semibold text-white">예약하기</Link>
         </div>
       )}
 
-      {me.checkupOverdue && (
-        <Link href="/book?procedure=정기 검진" className="flex items-center justify-between rounded-2xl bg-warning-weak p-4">
-          <div>
-            <p className="text-[15px] font-bold text-warning">{who ? `${who} ` : ""}정기 검진 시기가 지났어요</p>
-            <p className="mt-0.5 text-[13px] text-grey-700">마지막 검진 후 6개월이 지났어요. 지금 예약해 보세요.</p>
-          </div>
-          <ChevronRight className="text-warning" />
-        </Link>
-      )}
 
       {/* AI 상담 */}
       <div className="rounded-3xl bg-white p-5">
         <div className="flex items-center gap-2">
-          <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-weak text-brand"><Sparkles size={16} /></span>
-          <p className="text-[16px] font-bold">진료 후 궁금한 점, 밤에도 바로 답해요</p>
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-weak text-brand"><Sparkles size={15} /></span>
+          <p className="text-[16px] font-bold">진료 후 궁금한 점, AI가 대신 답해 드려요</p>
         </div>
-        <p className="mt-2 text-[13px] leading-relaxed text-grey-500">병원 주의사항 · 보험 기준 자료로 답하고 근거 쪽수를 보여 드려요.</p>
-        <div className="mt-3 flex flex-col gap-2">
+        <p className="mt-1 text-[13px] text-grey-500">병원 주의사항 · 보험 기준 자료로 답하고 근거 쪽수를 보여 드려요</p>
+        <div className="mt-3 flex flex-wrap gap-2">
           {QUICK_QUESTIONS.map((q) => (
-            <Link key={q} href={`/chat?q=${encodeURIComponent(q)}`} className="flex items-center justify-between rounded-xl bg-grey-50 px-4 py-3 text-[14px] text-grey-900">
-              <span>“{q}”</span><ChevronRight size={16} className="text-grey-400" />
-            </Link>
+            <Link key={q} href={`/chat?q=${encodeURIComponent(q)}`} className="rounded-full bg-grey-100 px-3 py-1.5 text-[13px] text-grey-900">{q}</Link>
           ))}
         </div>
         <Link href="/chat" className="mt-3 flex h-11 items-center justify-center gap-1.5 rounded-xl bg-brand-weak text-[15px] font-semibold text-brand">
-          <MessageCircle size={18} /> 직접 물어보기
+          <MessageCircle size={18} /> AI에게 물어보기
         </Link>
       </div>
 
@@ -108,7 +95,7 @@ export default function HomePage() {
           { href: "/book", label: "예약 신청", sub: "빈 시간 바로 확인", icon: CalendarPlus },
           { href: "/treatments", label: "받은 시술", sub: "주의사항 다시 보기", icon: Stethoscope },
         ].map(({ href, label, sub, icon: Icon }) => (
-          <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl bg-white p-4">
+          <Link key={href} href={href} className="flex items-center gap-3 rounded-2xl bg-white px-4 py-3">
             <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-grey-100 text-grey-700"><Icon size={20} /></span>
             <span><span className="block text-[15px] font-semibold">{label}</span><span className="block text-[12px] text-grey-500">{sub}</span></span>
           </Link>
@@ -116,14 +103,14 @@ export default function HomePage() {
       </div>
 
       {family && (
-        <div className="rounded-3xl bg-white p-5">
-          <p className="text-[16px] font-bold">가족 예약</p>
+        <div className="rounded-3xl bg-white px-5 py-4">
+          <p className="text-[15px] font-bold">가족 예약</p>
           {others.length === 0 ? <p className="mt-2 text-[14px] text-grey-500">다른 가족의 예정된 예약이 없어요</p> : (
             <ul className="mt-2 divide-y divide-grey-100">
-              {others.map((a) => (
+              {others.slice(0, 2).map((a) => (
                 <li key={a.id}>
-                  <Link href="/appointments" className="flex items-center gap-3 py-3">
-                    <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-weak text-[13px] font-bold text-brand">{a.patient.length > 2 ? a.patient.slice(1, 3) : a.patient}</span>
+                  <Link href="/appointments" className="flex items-center gap-3 py-2.5">
+                    <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-weak text-[12px] font-bold text-brand">{a.patient.length > 2 ? a.patient.slice(1, 3) : a.patient}</span>
                     <div className="min-w-0 flex-1">
                       <p className="text-[15px] font-semibold">{a.patient} · {a.procedure}</p>
                       <p className="text-[13px] text-grey-500">{fmtDateTime(a.start_at)}</p>
@@ -138,22 +125,14 @@ export default function HomePage() {
       )}
 
       {/* 병원 정보 */}
-      <div className="rounded-3xl bg-white p-5">
-        <div className="flex items-center justify-between">
-          <p className="flex items-center gap-1.5 text-[15px] font-bold"><Clock size={16} className="text-grey-500" /> 진료 시간</p>
-          <span className={`flex items-center gap-1.5 text-[13px] font-semibold ${status.open ? "text-success" : "text-grey-500"}`}>
+      <div className="flex items-center justify-between rounded-2xl bg-white px-4 py-3">
+        <div className="min-w-0">
+          <p className={`flex items-center gap-1.5 text-[13px] font-semibold ${status.open ? "text-success" : "text-grey-500"}`}>
             <span className={`h-2 w-2 rounded-full ${status.open ? "bg-success" : "bg-grey-400"}`} />{status.text}
-          </span>
+          </p>
+          <p className="mt-0.5 flex items-center gap-1 text-[12px] text-grey-500"><Clock size={12} /> 평일 9:30~18:30 · 토 ~13:00 · 일 휴진</p>
         </div>
-        <dl className="mt-3 space-y-1.5 text-[14px]">
-          <div className="flex justify-between"><dt className="text-grey-500">평일</dt><dd>09:30 ~ 18:30</dd></div>
-          <div className="flex justify-between"><dt className="text-grey-500">점심시간</dt><dd>13:00 ~ 14:00</dd></div>
-          <div className="flex justify-between"><dt className="text-grey-500">토요일</dt><dd>09:30 ~ 13:00</dd></div>
-          <div className="flex justify-between"><dt className="text-grey-500">일요일 · 공휴일</dt><dd className="text-danger">휴진</dd></div>
-        </dl>
-        <a href="tel:0212345678" className="mt-4 flex h-11 items-center justify-center gap-1.5 rounded-xl bg-grey-100 text-[15px] font-semibold text-grey-900">
-          <Phone size={16} /> 병원에 전화하기 02-1234-5678
-        </a>
+        <a href="tel:0212345678" aria-label="병원에 전화하기" className="ml-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-grey-100 text-grey-900"><Phone size={18} /></a>
       </div>
     </div>
   );
