@@ -49,10 +49,10 @@ export default function MyPage() {
           </ul>
           {done && <p className="mt-3 rounded-xl bg-success-weak px-4 py-2.5 text-[14px] text-success">{done}</p>}
           {!open ? (
-            <button onClick={() => { setOpen(true); setDone(""); }} className="mt-3 flex h-11 w-full items-center justify-center gap-1.5 rounded-xl border border-dashed border-grey-400 text-[15px] font-semibold text-grey-700"><Plus size={18} /> 아이 등록하기</button>
+            <button onClick={() => { setOpen(true); setDone(""); }} className="mt-2 flex items-center gap-1 px-1 py-2 text-[15px] font-semibold text-brand"><Plus size={16} /> 가족 추가</button>
           ) : (
             <div className="mt-4 space-y-2.5 rounded-2xl bg-grey-50 p-4">
-              <p className="text-[15px] font-bold">아이 등록</p>
+              <p className="text-[15px] font-bold">가족 추가</p>
               <input className={input} placeholder="아이 이름" value={name} onChange={(e) => setName(e.target.value)} />
               <input className={input} type="date" value={birth} onChange={(e) => setBirth(e.target.value)} />
               <p className="pt-1 text-[13px] font-semibold text-grey-700">보호자 확인</p>
