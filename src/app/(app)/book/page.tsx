@@ -98,7 +98,7 @@ function Book() {
                 })}
               </div>
             </div>
-            <p className="mt-2 text-[12px] text-grey-400">목록에 없는 아이는 첫 방문 때 데스크에서 보호자 번호로 등록해 드려요.</p>
+            <p className="mt-2 text-[12px] text-grey-400">목록에 없는 아이는 마이에서 등록할 수 있어요.</p>
           </section>
         )}
 

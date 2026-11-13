@@ -5,15 +5,15 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { Bell, CalendarDays, Home, MessageCircle, Check, UserRound } from "lucide-react";
 import { api, Profile, session } from "@/lib/api";
 
-type Ctx = { profiles: Profile[]; current: Profile | null; choose: (id: number) => void; version: number };
-const ProfileCtx = createContext<Ctx>({ profiles: [], current: null, choose: () => {}, version: 0 });
+type Ctx = { profiles: Profile[]; current: Profile | null; choose: (id: number) => void; version: number; setProfiles: (p: Profile[]) => void };
+const ProfileCtx = createContext<Ctx>({ profiles: [], current: null, choose: () => {}, version: 0, setProfiles: () => {} });
 export const useProfile = () => useContext(ProfileCtx);
 
 const TABS = [
   { href: "/home", label: "홈", icon: Home },
   { href: "/chat", label: "AI 상담", icon: MessageCircle },
   { href: "/appointments", label: "내 진료", icon: CalendarDays },
-  { href: "/notifications", label: "알림", icon: Bell },
+  { href: "/my", label: "마이", icon: UserRound },
 ];
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -23,6 +23,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const [current, setCurrent] = useState<Profile | null>(null);
   const [open, setOpen] = useState(false);
   const [version, setVersion] = useState(0);
+  const [unread, setUnread] = useState(0);
+  useEffect(() => { if (session.token()) api<{ unread?: number }>("/me").then((m) => setUnread(m.unread || 0)).catch(() => {}); }, [path, version]);
 
   useEffect(() => {
     if (!session.token()) { router.replace("/"); return; }
@@ -44,11 +46,11 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const family = profiles.length > 1;
 
   return (
-    <ProfileCtx.Provider value={{ profiles, current, choose, version }}>
+    <ProfileCtx.Provider value={{ profiles, current, choose, version, setProfiles }}>
       <div className="flex min-h-dvh flex-col bg-grey-100">
         <header className="sticky top-0 z-20 flex h-14 items-center justify-between bg-white px-5">
           <span className="text-[17px] font-bold text-brand">미소치과</span>
-          <button onClick={() => setOpen(true)} aria-label="내 정보" className="flex h-9 w-9 items-center justify-center rounded-full bg-grey-100 text-grey-700"><UserRound size={18} /></button>
+          <Link href="/notifications" aria-label="알림" className="relative flex h-9 w-9 items-center justify-center rounded-full text-grey-700"><Bell size={22} />{unread > 0 && <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-danger" />}</Link>
         </header>
 
         <main key={version} className="flex-1 pb-24">{children}</main>
