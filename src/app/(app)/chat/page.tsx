@@ -18,10 +18,18 @@ export default function ChatPage() {
   useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }); }, [msgs, busy]);
   // 이전 상담과 데스크 답변 (오래된 것부터)
   useEffect(() => {
-    api<History[]>("/chat").then((h) => setMsgs(h.slice().reverse().flatMap((x) => [
+    api<History[]>("/chat").then((h) => setMsgs((cur) => [...h.slice().reverse().flatMap((x) => [
       { role: "me" as const, text: x.question },
       { role: "bot" as const, text: x.desk_answer ? `데스크 답변: ${x.desk_answer}` : x.ai_answer || (x.status === "증상 안내" ? "증상 질문이라 병원 연락처를 안내해 드렸어요." : "데스크에 전달했어요. 답변이 오면 알림으로 알려 드릴게요."), past: true },
-    ]))).catch(() => {});
+    ]), ...cur])).catch(() => {});
+  }, []);
+
+  // 홈의 예시 질문에서 들어오면 바로 질문 (?q=)
+  const asked = useRef(false);
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search).get("q");
+    if (q && !asked.current) { asked.current = true; window.history.replaceState(null, "", "/chat"); send(q); }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function send(text: string) {

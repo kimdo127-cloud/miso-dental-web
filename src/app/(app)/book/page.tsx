@@ -2,7 +2,7 @@
 import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { api, addDays, dowOf, kstToday } from "@/lib/api";
-import { useProfile, PageTitle } from "@/components/shell";
+import { useProfile } from "@/components/shell";
 import { Button, ErrorText, Spinner } from "@/components/ui";
 
 type Proc = { id: number; name: string; duration_min: number };
@@ -48,66 +48,105 @@ function Book() {
     } finally { setBusy(false); }
   }
 
+  const am = slots?.filter((s) => Number(s.time.slice(0, 2)) < 12) || [];
+  const pm = slots?.filter((s) => Number(s.time.slice(0, 2)) >= 12) || [];
+  const openCount = slots?.filter((s) => s.available).length || 0;
+  const step = !proc ? 1 : !time ? 2 : 3;
+  const md = (d: string) => `${Number(d.slice(5, 7))}월 ${Number(d.slice(8))}일 (${dowOf(d)})`;
+
+  const SlotGrid = ({ list }: { list: Slot[] }) => (
+    <div className="mt-2 grid grid-cols-4 gap-2">
+      {list.map((s) => (
+        <button key={s.time} disabled={!s.available} onClick={() => setTime(s.time)}
+          className={`flex h-12 flex-col items-center justify-center rounded-xl text-[15px] font-semibold transition ${time === s.time ? "bg-brand text-white shadow-[0_4px_12px_rgba(49,130,246,.3)]" : s.available ? "border border-grey-200 bg-white text-grey-900 active:bg-grey-50" : "bg-grey-50 text-grey-400"}`}>
+          {s.time}{!s.available && <span className="text-[10px] font-medium leading-none">마감</span>}
+        </button>
+      ))}
+    </div>
+  );
+
   return (
-    <div>
-      <PageTitle title="예약 신청" />
-      <div className="space-y-6 bg-white px-5 pb-6">
+    <div className="pb-32">
+      <div className="bg-white px-5 pb-4 pt-4">
+        <h1 className="text-[24px] font-bold">예약 신청</h1>
+        <div className="mt-3 flex items-center gap-2 text-[13px] font-semibold">
+          {["진료", "날짜 · 시간", "확인"].map((l, i) => (
+            <span key={l} className="flex items-center gap-2">
+              <span className={`flex h-6 w-6 items-center justify-center rounded-full text-[12px] ${step > i + 1 ? "bg-brand text-white" : step === i + 1 ? "bg-grey-900 text-white" : "bg-grey-100 text-grey-400"}`}>{step > i + 1 ? "✓" : i + 1}</span>
+              <span className={step >= i + 1 ? "text-grey-900" : "text-grey-400"}>{l}</span>
+              {i < 2 && <span className="h-px w-5 bg-grey-200" />}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      <div className="space-y-3 px-4 pt-3">
         {profiles.length > 1 && (
-          <section>
-            <h2 className="text-[15px] font-semibold text-grey-700">누구 예약인가요?</h2>
-            <div className="mt-3 flex gap-2">
+          <section className="rounded-3xl bg-white p-5">
+            <h2 className="text-[16px] font-bold">누구 예약인가요?</h2>
+            <div className="mt-3 flex flex-wrap gap-2">
               {profiles.map((p) => (
-                <button key={p.id} onClick={() => choose(p.id)} className={`h-11 rounded-full px-4 text-[15px] font-semibold ${current?.id === p.id ? "bg-grey-900 text-white" : "bg-grey-100 text-grey-700"}`}>
+                <button key={p.id} onClick={() => choose(p.id)} className={`h-10 rounded-full px-4 text-[14px] font-semibold ${current?.id === p.id ? "bg-grey-900 text-white" : "bg-grey-100 text-grey-700"}`}>
                   {p.name}{p.isChild ? " (아이)" : ""}
                 </button>
               ))}
             </div>
           </section>
         )}
-        <section>
-          <h2 className="text-[15px] font-semibold text-grey-700">1. 어떤 진료인가요?</h2>
+
+        <section className="rounded-3xl bg-white p-5">
+          <h2 className="text-[16px] font-bold">어떤 진료를 받으세요?</h2>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {procs.map((p) => (
-              <button key={p.id} onClick={() => setProc(p)} className={`rounded-m border px-3 py-3 text-left ${proc?.id === p.id ? "border-brand bg-brand-weak" : "border-grey-200"}`}>
+              <button key={p.id} onClick={() => setProc(p)} className={`relative rounded-2xl border-2 px-4 py-3 text-left transition ${proc?.id === p.id ? "border-brand bg-brand-weak" : "border-transparent bg-grey-50"}`}>
                 <p className="text-[15px] font-semibold">{p.name}</p>
-                <p className="text-[13px] text-grey-500">약 {p.duration_min}분</p>
+                <p className="mt-0.5 text-[12px] text-grey-500">약 {p.duration_min}분</p>
+                {proc?.id === p.id && <span className="absolute right-3 top-3 flex h-5 w-5 items-center justify-center rounded-full bg-brand text-[11px] text-white">✓</span>}
               </button>
             ))}
           </div>
         </section>
 
         {proc && (
-          <section>
-            <h2 className="text-[15px] font-semibold text-grey-700">2. 날짜</h2>
+          <section className="rounded-3xl bg-white p-5">
+            <div className="flex items-baseline justify-between">
+              <h2 className="text-[16px] font-bold">날짜</h2>
+              <span className="text-[13px] font-semibold text-grey-500">{Number(date.slice(5, 7))}월 · 일요일 휴진</span>
+            </div>
             <div className="-mx-5 mt-3 flex gap-2 overflow-x-auto px-5 pb-1">
               {days.map((d) => (
-                <button key={d} onClick={() => setDate(d)} className={`flex h-16 w-14 shrink-0 flex-col items-center justify-center rounded-m ${date === d ? "bg-grey-900 text-white" : "bg-grey-100"}`}>
-                  <span className={`text-[12px] ${date === d ? "text-grey-400" : dowOf(d) === "토" ? "text-brand" : "text-grey-500"}`}>{dowOf(d)}</span>
-                  <span className="text-[17px] font-bold">{Number(d.slice(8))}</span>
+                <button key={d} onClick={() => setDate(d)} className={`flex h-[68px] w-[52px] shrink-0 flex-col items-center justify-center gap-1 rounded-2xl transition ${date === d ? "bg-brand text-white" : "bg-grey-50"}`}>
+                  <span className={`text-[12px] font-medium ${date === d ? "text-white/80" : dowOf(d) === "토" ? "text-brand" : "text-grey-500"}`}>{dowOf(d)}</span>
+                  <span className="text-[18px] font-bold">{Number(d.slice(8))}</span>
                 </button>
               ))}
             </div>
-          </section>
-        )}
 
-        {proc && (
-          <section>
-            <h2 className="text-[15px] font-semibold text-grey-700">3. 시간 <span className="font-normal text-grey-500">· 빈 의자가 있는 시간만 고를 수 있어요</span></h2>
-            {!slots ? <Spinner /> : slots.length === 0 ? <p className="mt-3 text-[15px] text-grey-500">이 날은 예약할 수 있는 시간이 없어요.</p> : (
-              <div className="mt-3 grid grid-cols-4 gap-2">
-                {slots.map((s) => (
-                  <button key={s.time} disabled={!s.available} onClick={() => setTime(s.time)}
-                    className={`h-11 rounded-m text-[15px] font-medium ${time === s.time ? "bg-brand text-white" : s.available ? "bg-grey-100" : "bg-grey-50 text-grey-400 line-through"}`}>{s.time}</button>
-                ))}
-              </div>
+            <div className="mt-5 flex items-baseline justify-between">
+              <h2 className="text-[16px] font-bold">시간</h2>
+              {slots && slots.length > 0 && <span className="text-[13px] text-grey-500">예약 가능 <b className="text-brand">{openCount}</b>개</span>}
+            </div>
+            {!slots ? <Spinner /> : slots.length === 0 ? <p className="mt-3 rounded-xl bg-grey-50 p-4 text-center text-[14px] text-grey-500">이 날은 예약할 수 있는 시간이 없어요. 다른 날을 골라 주세요.</p> : (
+              <>
+                {am.length > 0 && <><p className="mt-3 text-[13px] font-semibold text-grey-500">오전</p><SlotGrid list={am} /></>}
+                {pm.length > 0 && <><p className="mt-4 text-[13px] font-semibold text-grey-500">오후 <span className="font-normal">· 점심시간 13:00~14:00 제외</span></p><SlotGrid list={pm} /></>}
+                <p className="mt-3 text-[12px] text-grey-400">진료 의자 5대 중 빈 의자가 있는 시간만 고를 수 있어요.</p>
+              </>
             )}
           </section>
         )}
         <ErrorText>{err}</ErrorText>
       </div>
-      <div className="sticky bottom-16 bg-white px-5 py-3">
+
+      <div className="fixed bottom-16 left-1/2 z-10 w-full max-w-[480px] -translate-x-1/2 border-t border-grey-200 bg-white px-5 pb-3 pt-3">
+        {proc && time && (
+          <div className="mb-2 flex items-center justify-between text-[14px]">
+            <span className="text-grey-500">{current && profiles.length > 1 ? `${current.name} · ` : ""}{proc.name}</span>
+            <span className="font-semibold">{md(date)} {time}</span>
+          </div>
+        )}
         <Button className="w-full" disabled={!proc || !time || busy} onClick={submit}>
-          {proc && time ? `${current && profiles.length > 1 ? current.name + " · " : ""}${Number(date.slice(5, 7))}월 ${Number(date.slice(8))}일 ${time} ${proc.name} 예약` : "진료와 시간을 골라 주세요"}
+          {busy ? "예약하는 중..." : proc && time ? "이 시간으로 예약하기" : !proc ? "진료를 골라 주세요" : "시간을 골라 주세요"}
         </Button>
       </div>
     </div>
