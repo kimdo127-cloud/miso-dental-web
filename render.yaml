@@ -1,0 +1,12 @@
+# Render 블루프린트: 미소치과 환자 웹앱 (Next.js)
+services:
+  - type: web
+    name: miso-dental-web
+    runtime: node
+    plan: free
+    region: virginia
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npx next start -p $PORT
+    envVars:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://miso-dental-backend.onrender.com/api
